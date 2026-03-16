@@ -86,6 +86,7 @@ public struct UnsafeMemoryArena: ~Copyable
     
     // MARK: (de)init
     
+    @inline(__always)
     private init(_ size: Int)
     {
         self.blockLength   = size
