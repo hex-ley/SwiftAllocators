@@ -22,7 +22,7 @@
 @inline(__always)
 @inlinable
 public func scopedMemoryArena<T>(
-    withBlockSize size: Int,
+    withBlockSize size: Int = 16_384,
     _ body: (_ arena: inout UnsafeMemoryArena) -> T
 ) -> T {
     var arena = UnsafeMemoryArena(blockSize: size)

@@ -102,7 +102,7 @@ public struct UnsafeMemoryArena: ~Copyable
     ///   The size, in bytes, of each backing memory block.
     ///   Must be greater than zero. Allocations larger than `blockSize` receive a
     ///   dedicated block and do not affect this value.
-    public init(blockSize: Int)
+    public init(blockSize: Int = 16_384)
     {
         // TODO: round up to next page size?
         assert(blockSize > MemoryLayout<MemoryBlockHeader>.size)
