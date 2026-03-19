@@ -20,10 +20,9 @@
 ///     arena. The closure may allocate freely.
 /// - Returns: The value returned by `body`.
 @inlinable
-public func scopedMemoryArena<T>(
-    withBlockSize size: Int = 16_384,
-    _ body: (_ arena: inout UnsafeMemoryArena) -> T
-) -> T {
+public func scopedMemoryArena<T>(withBlockSize size: Int = 16_384,
+                                 _ body: (_ arena: inout UnsafeMemoryArena) -> T) -> T
+{
     var arena = UnsafeMemoryArena(blockSize: size)
     let result = body(&arena)
     arena.destroy()
