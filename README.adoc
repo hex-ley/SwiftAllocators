@@ -1,0 +1,107 @@
+= SwiftAllocators
+
+Foundation-less and cross-platform implementations of specialized
+memory allocators, designed for maximum performance and control.
+
+== Requirements
+
+* Swift 6.0 or later
+* No Foundation required
+
+== Getting started
+
+Add the package to your `Package.swift` dependencies:
+
+[source, swift]
+----
+.package(url: "https://github.com/hex-ley/SwiftAllocators.git", from: "0.1.0")
+----
+
+Then add `"Allocators"` to the targets that need it:
+
+[source, swift]
+----
+.target(
+    name: "MyTarget",
+    dependencies: [
+        "...",
+        "...",
+        "Allocators"
+    ]
+)
+----
+
+== Basic Usage
+
+=== `UnsafeMemoryArena`
+
+An arena / bump allocator implementation. 
+
+Useful for performance-critical systems, where many allocations
+share the same lifetime (e.g. per-frame data in games, temporary
+buffers when parsing, AST nodes and IR code in compilers, or
+request-scoped data in servers). Avoids fragmentation and reduces
+overhead compared to general-purpose allocators. Allocation will
+always succeed regardless of the requested size, given that the
+system allocator does not fail.
+
+Allocations are served from a large backing memory block, which
+is allocated up front from the system allocator. Allocations
+are handed out sequentially by bumping an interal offset into
+the backing memory block, making it extremely fast. Instead of 
+individual deallocations, all memory is reclaimed at once by
+destroying the arena, reducing the risk of a memory leak and 
+the number of system calls. 
+
+[source, swift]
+----
+import Allocators
+
+var arena = UnsafeMemoryArena(blockSize: 4096)
+
+let intPtr = arena.allocate(initializedTo: 42)
+let rawPtr = arena.allocate(byteCount: 128, alignment: 8)
+// pass around pointers, or compute something
+
+arena.destroy()
+// all pointers obtained above are now invalid
+----
+
+Performance is traded for security. Using an `UnsafeMemoryArena`
+requires strict lifetime discipline. You may not free individual
+allocations; instead you must manually destroy the arena after
+use. All pointers recieved from the arena become dangling after.
+
+For convenience, the function `scopedMemoryArena(withBlockSize:_:)`
+is provided. It creates a new arena of the given size, runs the
+closure, and automatically destroys the arena after:
+
+[source, swift]
+----
+let result = scopedMemoryArena(withBlockSize: 4096) { arena in
+
+    let intPtr = arena.allocate(initializedTo: 42)
+    let rawPtr = arena.allocate(byteCount: 128, alignment: 8)
+    
+    return computeSomething(intPtr, rawPtr)
+}
+// arena destroyed
+----
+
+
+[WARNING]
+====
+This API trades Swift's usual memory safety for performance.
+Developer discipline is required, and following rules must be followed:
+
+. *The arena must be destroyed manually.* Call `destroy()`, or use
+  `scopedMemoryArena(withBlockSize:_:)` to have it called for you.
+. *Never use a pointer after the arena is destroyed.* All pointers
+  vended by an arena become dangling the moment it is destroyed.
+. *Never call `deallocate()` on pointers returned by the arena.*
+====
+
+== License
+
+This package is released under the MIT License.
+See link:LICENSE[LICENSE] for details.
