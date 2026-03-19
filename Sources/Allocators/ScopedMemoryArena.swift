@@ -19,7 +19,6 @@
 ///   - body: A closure that receives an `inout` reference to a newly created
 ///     arena. The closure may allocate freely.
 /// - Returns: The value returned by `body`.
-@inline(__always)
 @inlinable
 public func scopedMemoryArena<T>(
     withBlockSize size: Int = 16_384,
