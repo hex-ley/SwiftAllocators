@@ -1,7 +1,19 @@
+:toc:
+:toc-placement!:
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+:important-caption: :heavy_exclamation_mark:
+:caution-caption: :fire:
+:warning-caption: :warning:
+endif::[]
+
 = SwiftAllocators
 
 Foundation-less and cross-platform implementations of specialized
 memory allocators, designed for maximum performance and control.
+
+toc::[]
 
 == Requirements
 
@@ -88,17 +100,33 @@ let result = scopedMemoryArena(withBlockSize: 4096) { arena in
 // arena destroyed
 ----
 
+Types, which are not trivially destructible, must be destroyed manually.
+Note that allocating containers from the standard library (such as
+`Array` or `String`) is most likely a sign of misuse. These types
+manage their own storage outside the arena, with the difference that
+their destructors may not be run. In such cases, the arena provides no
+benefit.
+
+&nbsp;
 
 [WARNING]
 ====
 This API trades Swift's usual memory safety for performance.
 Developer discipline is required, and following rules must be followed:
 
-. *The arena must be destroyed manually.* Call `destroy()`, or use
-  `scopedMemoryArena(withBlockSize:_:)` to have it called for you.
-. *Never use a pointer after the arena is destroyed.* All pointers
-  vended by an arena become dangling the moment it is destroyed.
-. *Never call `deallocate()` on pointers returned by the arena.*
+. *The arena must be destroyed manually.* +
+  Call `destroy()`, or use `scopedMemoryArena(withBlockSize:_:)`
+  to have it called for you.
+. *Never use a pointer after the arena is destroyed.* +
+  All pointers vended by an arena become dangling the moment it is
+  destroyed.
+. *Never call `deallocate()` on pointers returned by the arena.* +
+  The system allocator does not know about individual allocations
+  made by the arena. Trying to deallocate them individually is UB.
+. *Non-trivial types must be destroyed manually*. +
+  On arena destruction, only the backing memory is deallocated.
+  The destructor of types, which own external resources, will not
+  be run automatically.
 ====
 
 == License
