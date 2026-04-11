@@ -253,7 +253,7 @@ public struct UnsafeMemoryArena: ~Copyable
     ///
     /// - Returns: A typed pointer to the initialized allocation.
     @inlinable
-    public mutating func allocate<T>(initializedTo value: consuming T) -> UnsafeMutablePointer<T>
+    public mutating func allocate<T: ~Copyable>(initializedTo value: consuming T) -> UnsafeMutablePointer<T>
     {
         let rawAllocation = allocate(
             byteCount: MemoryLayout<T>.size,
