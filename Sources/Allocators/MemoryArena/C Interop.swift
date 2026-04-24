@@ -14,4 +14,12 @@
         .pointee
         .allocate(byteCount: bytecount, alignment: alignment)
 }
+
+@c func arena_destroy(_ allocator: OpaquePointer)
+{
+    UnsafeMutablePointer<UnsafeMemoryArena>
+        .init(allocator)
+        .move()
+        .destroy()
+}
 #endif
