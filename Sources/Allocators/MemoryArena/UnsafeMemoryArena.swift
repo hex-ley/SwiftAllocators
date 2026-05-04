@@ -230,7 +230,7 @@ public struct UnsafeMemoryArena: ~Copyable
             .alignedUp(toMultipleOf: alignment)
         newOffset = allocation - backingMemory
         
-        if _slowPath(newOffset >= blockLength) {
+        if _slowPath(newOffset + byteCount > blockLength) {
             initializeNewBlock()
             allocation = backingMemory
                 .advanced(by: currentOffset)
